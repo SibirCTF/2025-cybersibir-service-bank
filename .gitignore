@@ -1,0 +1,8 @@
+.vscode/
+node_modules/
+build/
+repositories
+.env
+**.png
+
+!writeups/images/*.png
