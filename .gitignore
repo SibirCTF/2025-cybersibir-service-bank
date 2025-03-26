@@ -2,6 +2,5 @@
 node_modules/
 build/
 repositories
-**.png
 
 !writeups/images/*.png
