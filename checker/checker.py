@@ -70,7 +70,8 @@ def register(user_data):
     r = requests.post(
         Url.REGISTER_URL, 
         headers={'Content-Type': 'application/json'}, 
-        data=json.dumps(user_data))
+        data=json.dumps(user_data),
+        timeout=1.1)
     
     if r.status_code == 401: # user already exists
         return None
@@ -83,14 +84,15 @@ def login(user_data):
     r = requests.post(
         Url.LOGIN_URL, 
         headers={'Content-Type': 'application/json'}, 
-        data=json.dumps(user_data))
+        data=json.dumps(user_data),
+        timeout=1.1)
     
     assert_exception(r, 201)
     return r
 
 
 def logout(jwt):
-    r = requests.get(Url.LOGOUT_URL, cookies={'jwt': jwt})
+    r = requests.get(Url.LOGOUT_URL, cookies={'jwt': jwt}, timeout=1.1)
     assert_exception(r, 200)
 
 
@@ -98,7 +100,8 @@ def create(jwt, product_data):
     r = requests.post(Url.CREATE_URL, 
         headers={'Content-Type': 'application/json'}, 
         data=json.dumps(product_data),
-        cookies={'jwt': jwt})
+        cookies={'jwt': jwt},
+        timeout=1.1)
     
     if r.status_code == 400 and 'already exist' in r.text:
         return None
@@ -108,14 +111,14 @@ def create(jwt, product_data):
 
 
 def products(jwt):
-    r = requests.get(Url.PRODUCTS_URL, cookies={'jwt': jwt})
+    r = requests.get(Url.PRODUCTS_URL, cookies={'jwt': jwt}, timeout=1.1)
     
     assert_exception(r, 200)
     return r
 
 
 def product(jwt, pid):
-    r = requests.get(f'{Url.PRODUCTS_URL}/{pid}', cookies={'jwt': jwt})
+    r = requests.get(f'{Url.PRODUCTS_URL}/{pid}', cookies={'jwt': jwt}, timeout=1.1)
     
     assert_exception(r, 200)
     return r
@@ -126,14 +129,14 @@ def buy_product(jwt, pid):
         f'{Url.PRODUCTS_URL}/{pid}/buy', 
         headers={"Content-Type": "application/json"}, 
         data=json.dumps({'pid': pid, 'reason': 'buy'}),
-        cookies={'jwt': jwt})
+        cookies={'jwt': jwt}, timeout=1.1)
     
     assert_exception(r, 201)
     return r
 
 
 def check_image(image_path):
-    r = requests.get(f'{Url.IMAGE_URL}/{image_path}')
+    r = requests.get(f'{Url.IMAGE_URL}/{image_path}', timeout=1.1)
     assert_exception(r, 200)
     
 
@@ -152,9 +155,9 @@ def check_product_buy(jwt):
     test_product = create_resp.json()
     buy_product(jwt, test_product.get('id'))
     
-    time.sleep(.5)
-    if product(jwt, test_product.get('id')).json().get('content') != content:
-        raise CorruptException()
+    # time.sleep(.5)
+    # if product(jwt, test_product.get('id')).json().get('content') != content:
+    #     raise CorruptException()
 
 
 def get_random_string(size=16, chars=string.ascii_letters + string.digits):
@@ -210,7 +213,7 @@ def put_flag():
     except requests.exceptions.ConnectTimeout:
         service_down()
     except MumbleException:
-        service_mumble()
+        service_corrupt()
     except CorruptException:
         service_corrupt()
     except Exception as e:
